@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,6 +12,7 @@ const (
 	counter = "counter"
 )
 
+var log = logrus.New()
 var availableMetrics = map[string]struct{}{gauge: {}, counter: {}}
 
 type MetricRepository interface {
@@ -58,9 +59,15 @@ func gaugeMetricHandler(res http.ResponseWriter, req *http.Request) {
 
 	if req.Method != http.MethodPost {
 		http.Error(res, "Method is not allowed", http.StatusMethodNotAllowed)
+		log.Printf("Method not allowed: %s", req.Method)
 		return
 	}
-	urlPath := strings.Split(req.URL.Path, "/")[2:]
+	urlPath := strings.Split(req.URL.Path, "/")
+	if len(urlPath) < 4 {
+		http.Error(res, "incorrect input path", http.StatusBadRequest)
+		return
+	}
+	urlPath = urlPath[2:]
 	metricType := urlPath[0]
 	if _, found := availableMetrics[metricType]; !found {
 		http.Error(res, "incorrect metric type", http.StatusBadRequest)
@@ -86,14 +93,16 @@ func gaugeMetricHandler(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "incorrect metric value", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(storage)
+	log.Info("Current storage state: ", storage)
+}
+
+func init() {
+	log.Formatter = &logrus.JSONFormatter{}
+	log.Level = logrus.InfoLevel
 }
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc(`/update/`, gaugeMetricHandler)
-	err := http.ListenAndServe(`:8080`, mux)
-	if err != nil {
-		panic(err)
-	}
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
