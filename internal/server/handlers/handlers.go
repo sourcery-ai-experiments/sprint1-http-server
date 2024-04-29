@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/agatma/sprint1-http-server/cmd/storage"
+	"github.com/agatma/sprint1-http-server/internal/server/storage"
 	"log"
 	"net/http"
 	"strings"
@@ -28,6 +28,7 @@ func GaugeMetricHandler(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "incorrect metric value", http.StatusBadRequest)
 		return
 	}
+	log.Printf("current storage state: %v", storage.Storage)
 }
 
 func UndefinedMetricType(res http.ResponseWriter, req *http.Request) {
@@ -54,4 +55,5 @@ func CounterMetricHandler(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "incorrect metric value", http.StatusBadRequest)
 		return
 	}
+	log.Printf("current storage state: %v", storage.Storage)
 }

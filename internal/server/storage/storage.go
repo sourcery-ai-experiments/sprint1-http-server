@@ -1,10 +1,14 @@
 package storage
 
-import "strconv"
+import (
+	"strconv"
+	"sync"
+)
 
 type MemStorage struct {
 	gaugeValues   map[string]float64
 	counterValues map[string]int64
+	mutex         sync.Mutex
 }
 
 var Storage = &MemStorage{
@@ -18,6 +22,8 @@ type MetricRepository interface {
 }
 
 func (m *MemStorage) AddGaugeValues(key string, value string) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	gaugeValue, err := strconv.ParseFloat(value, 64)
 	if err != nil {
 		return err
@@ -27,6 +33,8 @@ func (m *MemStorage) AddGaugeValues(key string, value string) error {
 }
 
 func (m *MemStorage) AddCounterValues(key string, value string) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	counterValue, err := strconv.Atoi(value)
 	if err != nil {
 		return err
