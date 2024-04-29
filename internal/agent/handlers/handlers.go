@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"github.com/agatma/sprint1-http-server/internal/agent/storage"
 	"log"
@@ -26,11 +25,12 @@ func SendGaugeMetrics(host string, metricStorage *storage.MetricsStorage) error 
 		}
 		client := &http.Client{}
 		resp, err := client.Do(req)
+		defer resp.Body.Close()
 		if err != nil {
 			return err
 		}
 		if resp.StatusCode != http.StatusOK {
-			return errors.New(fmt.Sprintf("Bad request.Status Code %d", resp.StatusCode))
+			return fmt.Errorf("bad request.Status Code %d", resp.StatusCode)
 		}
 	}
 	return nil
@@ -45,11 +45,12 @@ func SendCounterMetrics(host, metricName string, metricValue int64) error {
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(fmt.Sprintf("Bad request.Status Code %d", resp.StatusCode))
+		return fmt.Errorf("bad request.Status Code %d", resp.StatusCode)
 	}
 	return nil
 }

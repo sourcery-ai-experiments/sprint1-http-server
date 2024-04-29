@@ -62,6 +62,7 @@ func TestCounterMetricHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			CounterMetricHandler(w, request)
 			result := w.Result()
+			defer result.Body.Close()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 		})
 	}
@@ -121,6 +122,7 @@ func TestGaugeMetricHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			GaugeMetricHandler(w, request)
 			result := w.Result()
+			defer result.Body.Close()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 		})
 	}
