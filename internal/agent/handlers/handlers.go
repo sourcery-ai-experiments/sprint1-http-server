@@ -25,10 +25,10 @@ func SendGaugeMetrics(host string, metricStorage *storage.MetricsStorage) error 
 		}
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			return err
 		}
+		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("bad request.Status Code %d", resp.StatusCode)
 		}
@@ -45,10 +45,10 @@ func SendCounterMetrics(host, metricName string, metricValue int64) error {
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("bad request.Status Code %d", resp.StatusCode)
 	}
