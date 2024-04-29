@@ -50,7 +50,7 @@ func gaugeMetricHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	urlPath := strings.Split(strings.Trim(req.URL.Path, "/"), "/")
 	if len(urlPath) < 4 {
-		http.Error(res, "incorrect input path", http.StatusBadRequest)
+		http.Error(res, "incorrect input path", http.StatusNotFound)
 		return
 	}
 	metricName, metricValue := urlPath[2], urlPath[3]
