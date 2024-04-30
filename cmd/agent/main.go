@@ -6,20 +6,19 @@ import (
 	"github.com/agatma/sprint1-http-server/internal/agent/handlers"
 	"github.com/agatma/sprint1-http-server/internal/agent/storage"
 	"log"
+	"strings"
 	"time"
 )
 
 func main() {
 	parseFlags()
-	collectMetricsTicker := time.NewTicker(time.Duration(pollInterval) * time.Second)
-	sendMetricsTicker := time.NewTicker(time.Duration(reportInterval) * time.Second)
+	collectMetricsTicker := time.NewTicker(options.pollInterval)
+	sendMetricsTicker := time.NewTicker(options.reportInterval)
 	metricStorage := &storage.MetricsStorage{
 		Metrics: make(map[string]float64),
 	}
-	//if !strings.Contains(flagRunAddr, "localhost") {
-	//	flagRunAddr = fmt.Sprintf("localhost%s", flagRunAddr)
-	//}
-	host := fmt.Sprintf("http://%s", flagRunAddr)
+	port := strings.Split(flagRunAddr, ":")[1]
+	host := fmt.Sprintf("http://127.0.0.1:%s", port)
 	var PollCount int64
 	for {
 		select {
