@@ -6,6 +6,7 @@ import (
 	"github.com/agatma/sprint1-http-server/internal/agent/handlers"
 	"github.com/agatma/sprint1-http-server/internal/agent/storage"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,9 @@ func main() {
 	sendMetricsTicker := time.NewTicker(time.Duration(reportInterval) * time.Second)
 	metricStorage := &storage.MetricsStorage{
 		Metrics: make(map[string]float64),
+	}
+	if !strings.Contains(flagRunAddr, "localhost") {
+		flagRunAddr = fmt.Sprintf("localhost%s", flagRunAddr)
 	}
 	host := fmt.Sprintf("http://%s", flagRunAddr)
 	var PollCount int64
