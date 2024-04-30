@@ -16,7 +16,7 @@ func main() {
 	metricStorage := &storage.MetricsStorage{
 		Metrics: make(map[string]float64),
 	}
-	host := fmt.Sprintf("http://localhost%s", flagRunAddr)
+	host := fmt.Sprintf("http://%s", flagRunAddr)
 	var PollCount int64
 	for {
 		select {
