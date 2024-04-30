@@ -4,20 +4,13 @@ import (
 	"github.com/agatma/sprint1-http-server/internal/agent/collector"
 	"github.com/agatma/sprint1-http-server/internal/agent/handlers"
 	"github.com/agatma/sprint1-http-server/internal/agent/storage"
-	"github.com/sirupsen/logrus"
+	"log"
 	"time"
 )
 
-var log = logrus.New()
-
-func init() {
-	log.Formatter = &logrus.JSONFormatter{}
-	log.Level = logrus.InfoLevel
-}
-
 func main() {
 	collectMetricsTicker := time.NewTicker(2 * time.Second)
-	sendMetricsTicker := time.NewTicker(10 * time.Second)
+	sendMetricsTicker := time.NewTicker(3 * time.Second)
 	metricStorage := &storage.MetricsStorage{
 		Metrics: make(map[string]float64),
 	}
