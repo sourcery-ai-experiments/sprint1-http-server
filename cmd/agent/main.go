@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/agatma/sprint1-http-server/internal/agent/collector"
 	"github.com/agatma/sprint1-http-server/internal/agent/handlers"
 	"github.com/agatma/sprint1-http-server/internal/agent/storage"
@@ -9,13 +10,14 @@ import (
 )
 
 func main() {
-	collectMetricsTicker := time.NewTicker(2 * time.Second)
-	sendMetricsTicker := time.NewTicker(3 * time.Second)
+	parseFlags()
+	collectMetricsTicker := time.NewTicker(time.Duration(pollInterval) * time.Second)
+	sendMetricsTicker := time.NewTicker(time.Duration(reportInterval) * time.Second)
 	metricStorage := &storage.MetricsStorage{
 		Metrics: make(map[string]float64),
 	}
+	host := fmt.Sprintf("http://localhost%s", flagRunAddr)
 	var PollCount int64
-	host := "http://localhost:8080"
 	for {
 		select {
 		case <-collectMetricsTicker.C:
