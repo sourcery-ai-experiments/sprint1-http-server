@@ -10,9 +10,7 @@ import (
 func main() {
 	r := chi.NewRouter()
 	r.Route("/update", func(r chi.Router) {
-		r.Post("/gauge/{metricName}/{metricValue}", handlers.AddGaugeMetric)
-		r.Post("/counter/{metricName}/{metricValue}", handlers.AddCounterMetric)
-		r.Get("/counter/{metricName}", handlers.AddCounterMetric)
+		r.Post("/{metricType}/{metricName}/{metricValue}", handlers.AddMetric)
 	})
 	r.Get("/value/{metricType}/{metricName}", handlers.GetMetric)
 	r.Get("/", handlers.GetAllMetricsHandler)

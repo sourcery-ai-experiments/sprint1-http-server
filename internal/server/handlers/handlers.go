@@ -7,35 +7,33 @@ import (
 	"net/http"
 )
 
+const (
+	gauge   = "gauge"
+	counter = "counter"
+)
+
 // handleError is a helper function to handle HTTP errors.
 func handleError(res http.ResponseWriter, errMsg string, statusCode int) {
 	http.Error(res, errMsg, statusCode)
 }
 
-// checkMetricName checks if the metric name is provided and not empty.
-func checkMetricName(metricName string) bool {
-	return metricName != ""
-}
-
-func AddGaugeMetric(res http.ResponseWriter, req *http.Request) {
-	metricName, metricValue := chi.URLParam(req, "metricName"), chi.URLParam(req, "metricValue")
-	if !checkMetricName(metricName) {
+func AddMetric(res http.ResponseWriter, req *http.Request) {
+	metricType, metricName := chi.URLParam(req, "metricType"), chi.URLParam(req, "metricName")
+	if metricName == "" {
 		handleError(res, "empty metric name", http.StatusNotFound)
 		return
 	}
-	if err := storage.Storage.AddGaugeValues(metricName, metricValue); err != nil {
-		handleError(res, "incorrect metric value", http.StatusBadRequest)
+	var err error
+	switch metricType {
+	case gauge:
+		err = storage.Storage.AddGaugeValues(metricName, chi.URLParam(req, "metricValue"))
+	case counter:
+		err = storage.Storage.AddCounterValues(metricName, chi.URLParam(req, "metricValue"))
+	default:
+		handleError(res, "incorrect metric type", http.StatusBadRequest)
 		return
 	}
-}
-
-func AddCounterMetric(res http.ResponseWriter, req *http.Request) {
-	metricName, metricValue := chi.URLParam(req, "metricName"), chi.URLParam(req, "metricValue")
-	if !checkMetricName(metricName) {
-		handleError(res, "empty metric name", http.StatusNotFound)
-		return
-	}
-	if err := storage.Storage.AddCounterValues(metricName, metricValue); err != nil {
+	if err != nil {
 		handleError(res, "incorrect metric value", http.StatusBadRequest)
 		return
 	}
@@ -45,18 +43,14 @@ func GetMetric(res http.ResponseWriter, req *http.Request) {
 	metricType, metricName := chi.URLParam(req, "metricType"), chi.URLParam(req, "metricName")
 	var v interface{}
 	var found bool
-	fmt.Println(metricName)
+
 	switch metricType {
-	case "gauge":
+	case gauge:
 		v, found = storage.Storage.GetGaugeValues(metricName)
-	case "counter":
+	case counter:
 		v, found = storage.Storage.GetCounterValues(metricName)
 	default:
 		handleError(res, "incorrect metric type", http.StatusNotFound)
-		return
-	}
-	if !checkMetricName(metricName) {
-		handleError(res, "empty metric name", http.StatusNotFound)
 		return
 	}
 	if !found {

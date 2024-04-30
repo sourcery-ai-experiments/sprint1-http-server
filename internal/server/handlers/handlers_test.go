@@ -15,83 +15,85 @@ func TestAddGaugeMetricHandler(t *testing.T) {
 		contentType string
 		statusCode  int
 	}
-	tests := []struct {
-		name        string
-		url         string
-		metricName  string
-		metricValue string
-		want        want
-		method      string
-	}{
-		{
-			name:        "statusOkGauge",
-			url:         "/update/gauge/{metricName}/{metricValue}",
-			metricName:  "someMetric",
-			metricValue: "13.0",
-			method:      http.MethodPost,
-			want: want{
-				contentType: "text/plain",
-				statusCode:  http.StatusOK,
-			},
-		},
-		{
-			name:        "statusIncorrectMetricValue",
-			url:         "/update/gauge/{metricName}/{metricValue}",
-			metricName:  "someMetric",
-			metricValue: "string",
-			method:      http.MethodPost,
-			want: want{
-				contentType: "text/plain",
-				statusCode:  http.StatusBadRequest,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, tt.url, nil)
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("metricName", tt.metricName)
-			rctx.URLParams.Add("metricValue", tt.metricValue)
-			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-			AddGaugeMetric(w, r)
-			result := w.Result()
-			defer result.Body.Close()
-			assert.Equal(t, tt.want.statusCode, result.StatusCode)
-		})
-	}
-}
 
-func TestAddCounterMetricHandler(t *testing.T) {
-	type want struct {
-		contentType string
-		statusCode  int
+	type Metric struct {
+		Name  string
+		Value string
+		Type  string
 	}
+
 	tests := []struct {
-		name        string
-		url         string
-		metricName  string
-		metricValue string
-		want        want
-		method      string
+		name   string
+		url    string
+		metric Metric
+		want   want
+		method string
 	}{
 		{
-			name:        "statusOkCounter",
-			url:         "/update/counter/{metricName}/{metricValue}",
-			metricName:  "someMetric",
-			metricValue: "13",
-			method:      http.MethodPost,
+			name: "statusOkGauge",
+			url:  "/update/{metricType}/{metricName}/{metricValue}",
+			metric: Metric{
+				Name:  "someMetric",
+				Value: "13.0",
+				Type:  gauge,
+			},
+			method: http.MethodPost,
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusOK,
 			},
 		},
 		{
-			name:        "statusIncorrectMetricValue",
-			url:         "/update/counter/{metricName}/{metricValue}",
-			metricName:  "someMetric",
-			metricValue: "string",
-			method:      http.MethodPost,
+			name: "statusOkCounter",
+			url:  "/update/{metricType}/{metricName}/{metricValue}",
+			metric: Metric{
+				Name:  "someMetric",
+				Value: "13",
+				Type:  counter,
+			},
+			method: http.MethodPost,
+			want: want{
+				contentType: "text/plain",
+				statusCode:  http.StatusOK,
+			},
+		},
+		{
+			name: "statusOkGauge",
+			url:  "/update/{metricType}/{metricName}/{metricValue}",
+			metric: Metric{
+				Name:  "someMetric",
+				Value: "13.0",
+				Type:  "unknown",
+			},
+			method: http.MethodPost,
+			want: want{
+				contentType: "text/plain",
+				statusCode:  http.StatusBadRequest,
+			},
+		},
+		{
+			name: "statusIncorrectMetricValue",
+			url:  "/update/{metricType}/{metricName}/{metricValue}",
+			metric: Metric{
+				Name:  "someMetric",
+				Value: "string",
+				Type:  gauge,
+			},
+			method: http.MethodPost,
+			want: want{
+				contentType: "text/plain",
+				statusCode:  http.StatusBadRequest,
+			},
+		},
+		{
+			name: "statusIncorrectMetricValue",
+			url:  "/update/{metricType}/{metricName}/{metricValue}",
+			metric: Metric{
+				Name:  "someMetric",
+				Value: "string",
+				Type:  counter,
+			},
+			method: http.MethodPost,
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusBadRequest,
@@ -103,10 +105,11 @@ func TestAddCounterMetricHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, tt.url, nil)
 			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("metricName", tt.metricName)
-			rctx.URLParams.Add("metricValue", tt.metricValue)
+			rctx.URLParams.Add("metricName", tt.metric.Name)
+			rctx.URLParams.Add("metricType", tt.metric.Type)
+			rctx.URLParams.Add("metricValue", tt.metric.Value)
 			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-			AddCounterMetric(w, r)
+			AddMetric(w, r)
 			result := w.Result()
 			defer result.Body.Close()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
