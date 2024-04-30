@@ -57,7 +57,7 @@ func GetMetric(res http.ResponseWriter, req *http.Request) {
 		handleError(res, "metric is not found", http.StatusNotFound)
 		return
 	}
-	res.Write([]byte(fmt.Sprintf("%s=%v", metricName, v)))
+	res.Write([]byte(fmt.Sprintf("%v", v)))
 }
 
 func GetAllMetricsHandler(res http.ResponseWriter, req *http.Request) {
